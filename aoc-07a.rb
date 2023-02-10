@@ -27,9 +27,9 @@ allLinesArr.each do |thisLine|
     allLetters[toChar][:from].push(fromChar)
 end
 # p allLetters
-allLetters.each do |thisKey, thisVal|
-    p "[#{thisKey}] => #{thisVal}"
-end
+# allLetters.each do |thisKey, thisVal|
+#     p "[#{thisKey}] => #{thisVal}"
+# end
 
 # Find the starting points.
 startChars = []
@@ -68,7 +68,7 @@ def printAndGoToNext(lettersNextStage, allLetters, outputLetters)
         end
         # p "CURR: #{currLetter}    TO: #{allLetters[currLetter][:to]}    NEXT: #{lettersNextStage}"
     else
-        p "SKIPPING: #{currLetter}"
+        # p "SKIPPING: #{currLetter}"
     end
     # print(currLetter)
     # p "CURR: #{currLetter}    TO: #{allLetters[currLetter][:to]}    NEXT: #{lettersNextStage}"

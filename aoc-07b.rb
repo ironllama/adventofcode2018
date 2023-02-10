@@ -1,13 +1,13 @@
-allLinesStr = %{Step C must be finished before step A can begin.
-Step C must be finished before step F can begin.
-Step A must be finished before step B can begin.
-Step A must be finished before step D can begin.
-Step B must be finished before step E can begin.
-Step D must be finished before step E can begin.
-Step F must be finished before step E can begin.
-}
+# allLinesStr = %{Step C must be finished before step A can begin.
+# Step C must be finished before step F can begin.
+# Step A must be finished before step B can begin.
+# Step A must be finished before step D can begin.
+# Step B must be finished before step E can begin.
+# Step D must be finished before step E can begin.
+# Step F must be finished before step E can begin.
+# }
 
-# allLinesStr = File.read('aoc-07.in')
+allLinesStr = File.read('aoc-07.in')
 
 allLinesArr = allLinesStr.split("\n")
 
@@ -38,92 +38,63 @@ end
 # end
 
 # Find the starting points.
-# startChars = []
-# allLetters.each do |thisKey, thisVal|
-#     if allLetters[thisKey][:from].length == 0
-#         startChars.push(thisKey)
-#     end
-# end
-# p "START: #{startChar}"
+lettersNextStage = []
+allLetters.each do |thisKey, thisVal|
+    if allLetters[thisKey][:from].length == 0 && allLetters[thisKey][:to].length != 0
+        lettersNextStage.push(thisKey)
+    end
+end
+# p "START: #{lettersNextStage}"
 
-# # Recursively process the letters
-# def printAndGoToNext(lettersNextStage, allLetters, outputLetters)
-#     lettersNextStage.sort!()  # Sort the next letters.
-#     currLetter = lettersNextStage.shift()  # Pull out the first one to process it.
 
-#     # Make sure the prereqs for the current letter are fulfilled == all the from's have been visited.
-#     prereqs = allLetters[currLetter][:from].sort!()
-#     # p "OUTPUT: #{outputLetters}    PREREQ: #{prereqs}"
-#     prereqsFulfilled = true
-#     prereqs.each do |checkMe|
-#         unless outputLetters.include?(checkMe)
-#             prereqsFulfilled = false
-#         end
-#     end
+# allOrderLen = 6
+# num_workers = 2
+# sec_offset = 0
 
-#     # If the current letter's prereq's have been fulfilled, use it, otherwise skip it.
-#     if prereqsFulfilled
-#         outputLetters += currLetter
+allOrderLen = 26
+num_workers = 5
+sec_offset = 60
 
-#         # Add the new letters to the list of next letters. Skip duplicates.
-#         # lettersNextStage.concat(allLetters[currLetter][:to])
-#         allLetters[currLetter][:to].each do |addMe|
-#             unless lettersNextStage.include?(addMe)
-#                 lettersNextStage.push(addMe)
-#             end
-#         end
-#         # p "CURR: #{currLetter}    TO: #{allLetters[currLetter][:to]}    NEXT: #{lettersNextStage}"
-#     else
-#         p "SKIPPING: #{currLetter}"
-#     end
-#     # print(currLetter)
-#     # p "CURR: #{currLetter}    TO: #{allLetters[currLetter][:to]}    NEXT: #{lettersNextStage}"
-
-#     # If there are more letters to process, recurse. Otherwise, print the results!
-#     if lettersNextStage.length > 0
-#         printAndGoToNext(lettersNextStage, allLetters, outputLetters)
-#     else
-#         puts "FINAL: #{outputLetters}"
-#     end
-
-# end
-
-# printAndGoToNext(startChars, allLetters, "")
-
-# allLetters.each do |thisKey, thisLetter|
-#     puts "[#{thisKey}]: #{allLetters[thisKey]}"
-# end
-
-order = "CABDFE"
-# order = "CQSWKZFJONPBEUMXADLYIGVRHT"
 alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 totalSeconds = 0
-lettersNextStage = [order[0]]
 outputLetters = ""
 
 class Worker
-    attr_accessor :letter, :currTick
+    attr_accessor :letter, :currTick, :name
 
-    def initialize()
+    def initialize(inName)
+        @name = inName
         @letter = "."
         @currTick = 0
     end
 end
-allWorkers = Array.new(2, Worker.new)
+allWorkers = Array.new(num_workers) { |i| Worker.new(i) }
 
-allOrderLen = order.length
+# allOrderLen = order.length
 while outputLetters.length != allOrderLen do
-    # Assign work, if possible, to all the workers.
-    allWorkers.each do |thisWorker|
-        p "CHECKING: #{thisWorker.letter}:#{thisWorker.currTick}"
-        if thisWorker.currTick == 0  # If this worker is free...
 
+    # # Print current status.
+    # print "BEGIN SEC: #{totalSeconds}\t"
+    # allWorkers.each do |thisWorker|
+    #     print "#{thisWorker.letter}\t"
+    # end
+    # print "[#{outputLetters}]\n"
+
+    # Complete work for each worker.
+    allWorkers.each do |thisWorker|
+        if thisWorker.currTick == 0  # If this worker is free...
             #If the worker just finished a letter, add it to the finished outputs.
             if thisWorker.letter != "."
                 outputLetters = outputLetters + thisWorker.letter
                 thisWorker.letter = "."
             end
+        end
+    end
 
+    # Assign work, if possible, to all the workers.
+    allWorkers.each do |thisWorker|
+        # p "CHECKING: [#{thisWorker.name}] #{thisWorker.letter}:#{thisWorker.currTick} NEXT:#{lettersNextStage} OUTPUT:#{outputLetters}"
+        if thisWorker.currTick == 0  # If this worker is free...
             # If there are more letters to work on...
             if lettersNextStage.length > 0
                 # Get the next available letter that has fulfilled priors.
@@ -132,13 +103,15 @@ while outputLetters.length != allOrderLen do
                     allLetters[currLetter][:from].each do |checkMe|
                         unless outputLetters.include?(checkMe)
                             prereqsFulfilled = false
+                            # p "UNFULFILLED: #{checkMe} vs OUTPUT:#{outputLetters}"
+                            break
                         end
                     end
 
                     # If the current letter's prereq's have been fulfilled, use it, otherwise skip it.
                     if prereqsFulfilled
                         # Remove it from the available letters list.
-                        p "DELETING: #{currLetter}"
+                        # p "PULL AVAILABLE: #{currLetter}"
                         lettersNextStage.delete(currLetter)
 
                         # Add the new to letters to the list of next letters. Skip duplicates.
@@ -148,14 +121,14 @@ while outputLetters.length != allOrderLen do
                             end
                         end
                         lettersNextStage.sort!()  # Sort the list of next letters.
-                        p "CURR: #{currLetter}    TO: #{allLetters[currLetter][:to]}    NEXT: #{lettersNextStage}"
+                        # p "CURR: #{currLetter}    TO: #{allLetters[currLetter][:to]}    NEXT: #{lettersNextStage}"
 
                         thisWorker.letter = currLetter
-                        thisWorker.currTick = alpha.index(currLetter)
-                        break;  # Found letter, so break out of finding letters.
-                    else
-                        # p "SKIPPING: #{currLetter}"
-                    end 
+                        thisWorker.currTick = alpha.index(currLetter) + sec_offset
+                        break  # Found letter, so break out of finding letters.
+                    # else
+                    #     p "SKIPPING: #{currLetter}"
+                    end
                 end
             else
                 next  # If no more letters to work on, go to next worker.
@@ -166,13 +139,8 @@ while outputLetters.length != allOrderLen do
         end
     end
 
-    # Print current status.
-    print "#{totalSeconds}\t"
-    allWorkers.each do |thisWorker|
-        print "#{thisWorker.letter}\t"
-    end
-    print "[#{outputLetters}]\n"
-
     # End of second.
     totalSeconds += 1
 end
+
+p totalSeconds - 1
