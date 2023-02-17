@@ -20,7 +20,7 @@ endMarble = tokens[6].to_i * 100
 
 # buffer = [0]  # ~1.5h
 buffer = CircularList.new  # 5s
-buffer.insert(0)
+buffer.insert_end(0)
 
 currMarble = 1
 currPos = 0
@@ -41,15 +41,11 @@ while currMarble <= endMarble
         2.times do
             buffer.move_next
         end
-        buffer.insert(currMarble)
+        buffer.insert_current(currMarble)
     end
 
-    # orig_curr = buffer.current  # Since buffer.full_scan will change the buffer.current
     # print "[#{currPlayer}] "
-    # # buffer.full_scan { |node| if node.data == currMarble then print "(#{node.data})" else print " #{node.data} " end }
-    # buffer.full_scan { |node| print (node.data == currMarble) ? "(#{node.data})" : " #{node.data} " }
-    # puts ""
-    # buffer.current = orig_curr
+    # buffer.print_with_current
 
     currMarble += 1
 end
