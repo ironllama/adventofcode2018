@@ -1,3 +1,9 @@
+# I figured pretty early on that just updating part 1 would be slow, but didn't really
+# know why. So, after I solved it (by painstakingly translating the instructions to
+# code), I went back and updated the part a to see just how slow.
+# aoc-21b: ~0.5sec
+# aco-21b2: 1414sec (~23.5min)
+
 lines = File.read("aoc-21.in").split("\n")
 
 # DEBUG = true
@@ -16,12 +22,20 @@ lines.each do |line|
     end
 end
 
+
 loop_num = 0
 register = [0, 0, 0, 0, 0, 0]
 # register = [12, 18, 0, 65536, 14559001, 255]
 
-while register[ip] < instructions.length &&
-        register[ip] != 28  # Seems instruction 28 ("eqrr 4 0 5") determines stop!
+nums = []
+while register[ip] < instructions.length
+# while register[ip] < instructions.length &&
+#         register[ip] != 28  # Seems instruction 28 ("eqrr 4 0 5") determines stop!
+
+    if register[ip] == 28
+        nums.index(register[4]).nil? ? nums.push(register[4]) : break
+        # puts "NEW: #{register[4]} LEN: #{nums.length}"
+    end
 
     i = instructions[register[ip]]
 
@@ -71,4 +85,5 @@ while register[ip] < instructions.length &&
 end
 puts "[#{register.join(", ")}] -- LOOPS: #{loop_num}" if DEBUG
 
-puts register[4]
+# puts register[4]
+puts "FINAL: #{nums.pop}"
